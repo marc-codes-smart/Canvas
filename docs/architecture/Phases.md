@@ -40,37 +40,48 @@ A sub-phase is not "done" until **all** of the following are true:
 - **Mapster** for object mapping
 - **Serilog** for structured logging
 - **Scalar** (replacement for Swashbuckle) for OpenAPI/Swagger
+- **Vogen** for strongly-typed ID source generation
+- **ErrorOr** for `Result<T>`-style domain error handling
 - **SQL Server 2025** with native `VECTOR` type for the Memory bounded context
 - **GitHub Actions** for CI/CD
 - **Testcontainers** for database integration tests
+- **xUnit** + **FluentAssertions** + **NSubstitute** for unit tests
+- **NetArchTest** for enforcing architectural rules
 - Front-end tech: TBD in Phase 1E, but leaning **Next.js 15 + React 19 + TypeScript + shadcn/ui**
 
 ### Architectural Rules
 
-- Clean Architecture layering: `Domain` ← `Application` ← `Infrastructure`, `Application` ← `API`. Domain depends on nothing.
-- **Entity-centric folder grouping** inside each layer. Value objects, services, commands, queries, and events live under their owning entity's folder.
-- **Strongly-typed, immutable IDs** (`readonly record struct XxxId(Guid Value)`).
-- **Value objects are immutable** and self-validating.
-- **Aggregates enforce their own invariants**; cross-aggregate consistency is eventual, via domain/integration events.
-- **Memory is a separate bounded context**, integrated only via events.
+Canvas uses a **modular monolith** with module-first (not layer-first) project structure.
+
+- **One project per module.** Each bounded context is its own `Canvas.<Module>` project (e.g., `Canvas.Idea`, `Canvas.Project`, `Canvas.Planning`, `Canvas.Architecture`, `Canvas.Memory`, `Canvas.Integration`).
+- **Layered folders inside each module**, not layered projects: `Domain/`, `Application/`, `Infrastructure/`, `Api/`. Clean Architecture dependency direction is enforced by folder-level rules in `Canvas.ArchitectureTests`.
+- **Modules never reference other modules.** Cross-module coupling is via **domain/integration events only**. A module's compile-time dependencies are only `Canvas.Common` and `Canvas.Infrastructure.Shared`. Enforced by `Canvas.ArchitectureTests`.
+- **Shared primitives** (`Entity<TId>`, `ValueObject`, `AggregateRoot<TId>`, `DomainEvent`, `Error`, `DomainException`) live in `Canvas.Common`.
+- **Shared infrastructure** (the single `CanvasDbContext`, EF Core migrations, outbox, event dispatcher plumbing) lives in `Canvas.Infrastructure.Shared`. Modules contribute entity configurations.
+- **Composition root** is `Canvas.Host` — registers every module via its `Module.cs` and hosts the API.
+- **Strongly-typed, immutable IDs** generated via Vogen (`[ValueObject<Guid>] public readonly partial struct XxxId`).
+- **Value objects are immutable** and self-validating at construction.
+- **Aggregates enforce their own invariants**; cross-aggregate consistency is eventual, via events.
+- **Domain events** are accumulated on the aggregate and dispatched *after* the Unit of Work commits (collect-then-dispatch).
+- **Shared DbContext for v1**; split only if a module demands physical isolation later (e.g., Memory may move to its own schema/DB in Phase 5 without breaking consumers).
 
 ---
 
 ## Phase 1 — Clean Architecture Foundation *(Jira Epic: SCRUM-5)*
 
-**Goal:** Stand up the empty but fully wired solution. Every layer exists, references are correct, DI works end-to-end, CI runs green on first commit.
+**Goal:** Stand up the empty but fully wired modular-monolith skeleton. Shared primitives compile, architecture rules are enforced by tests, DI works end-to-end, CI runs green on first commit. Module projects are **not** created in Phase 1 — they come online in Phase 2+ as each bounded context is implemented.
 
 | Sub-phase | Story | Testable "done" bar |
 |---|---|---|
-| **1A** | Solution + Domain project scaffold | Domain project compiles; architecture tests assert it has zero outbound references; base types (`Entity<TId>`, `ValueObject`, `DomainEvent`) unit-tested. |
-| **1B** | Application layer (CQRS scaffolding) | MediatR wired; generic behaviors (validation, logging) in place; sample no-op command + query pass unit tests. |
-| **1C** | Infrastructure layer (EF Core + SQL Server) | DbContext compiles; a migration can be created and applied; integration test using Testcontainers confirms DB connectivity and migration. |
-| **1D** | API layer (Minimal APIs + controllers optional) | API boots; `/health` endpoint responds 200; OpenAPI doc generates; integration test hits `/health`. |
-| **1E** | Front-end scaffold | Next.js app builds; calls `/health`; displays status; e2e smoke test (Playwright) passes. |
-| **1F** | End-to-end DI + smoke test | Full stack (API + DB + front-end) boots via `docker-compose`; smoke test confirms front-end → API → DB round-trip. |
+| **1A** | Solution + `Canvas.Common` (shared kernel) + architecture tests | `Canvas.sln` created; `Canvas.Common` compiles with base types (`Entity<TId>`, `AggregateRoot<TId>`, `ValueObject`, `DomainEvent`, `Error`, `DomainException`); `Canvas.Common.Tests` covers all base-type behavior; `Canvas.ArchitectureTests` asserts `Canvas.Common` has zero outbound project references; all green locally. |
+| **1B** | `Canvas.Infrastructure.Shared` + CQRS/event plumbing | Shared `CanvasDbContext`; MediatR + pipeline behaviors (validation, logging, exception handling, unit-of-work); domain-event collector + post-commit dispatcher; outbox table scaffolded; unit + integration tests cover the plumbing. |
+| **1C** | `Canvas.Host` composition root + API bootstrap | Host references `Canvas.Common` + `Canvas.Infrastructure.Shared`; discovers and registers modules via `Module.cs` pattern (no modules yet — pattern proven with a test-only stub module); `/health` endpoint responds 200; OpenAPI doc generates; integration test hits `/health`. |
+| **1D** | SQL Server connectivity end-to-end | Docker Compose or Testcontainers-based SQL Server 2025 target; first EF Core migration applied; integration test confirms DB round-trip from `Canvas.Host`. |
+| **1E** | Front-end scaffold (`Canvas.Web`) | Next.js 15 app builds; calls `/health`; displays status; e2e smoke test (Playwright) passes. |
+| **1F** | End-to-end smoke test | Full stack (front-end + API + DB) boots via `docker-compose`; smoke test confirms front-end → API → DB round-trip; cross-module event dispatch proven with the stub module. |
 | **1G** | GitHub Actions CI pipeline | Push to `main` or PR triggers build + unit tests + integration tests + architecture tests; coverage report uploaded; red CI blocks merge. |
 
-**Exit criteria:** Solution builds, CI is green, every layer is reachable from every other valid layer, testing infrastructure proven. *No business features yet.*
+**Exit criteria:** Solution builds, CI is green, architecture rules enforced, testing infrastructure proven end-to-end, module-registration pattern validated. *No business features yet.*
 
 ---
 

@@ -18,3 +18,11 @@ I had Claude read the ./docs/design/Canvas.md and these are some observations an
 7. Let's go with strongly-types immutable IDs.
 8. I would like actually go with .NET 10 for this project, because there are legacy issues that we will have to address, and I believe it is stable enough for development.
 9. I addressed with the first statement, but for right now let's keep it simple and develop a single user application, but I would like it to be easily extendable. I would think with the way we are designing the application that User would just be another Entity with its own services, commands and queries. I would think we could develop User Group as a Value Object.
+
+## Final Decisions
+
+1. Option A
+2. yes
+3. Cross-module coupling via events.
+4. Yes, shared DbContext
+5. Everything else looks good and I accept your recommendations.
