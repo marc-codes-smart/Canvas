@@ -1,0 +1,65 @@
+# ---- Secrets / local config ----
+jira-config.md
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# ---- Personal Claude context (symlink to ~/OneDrive/dev/CLAUDE + local imports) ----
+# Match both the symlink (file) and a real directory of the same name.
+CLAUDE
+CLAUDE/
+CLAUDE.local.md
+
+# ---- Claude Code project state ----
+# Keep shared settings.json committed; ignore user-local overrides and caches.
+.claude/settings.local.json
+.claude/cache/
+
+# ---- .NET ----
+bin/
+obj/
+out/
+[Dd]ebug/
+[Rr]elease/
+[Bb]uild/
+[Pp]ublish/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+*.userprefs
+project.lock.json
+project.fragment.lock.json
+artifacts/
+
+# ---- Rider / VS / VS Code ----
+.idea/
+.vs/
+.vscode/
+*.swp
+*.swo
+
+# ---- macOS ----
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# ---- Node / Front-end (SCRUM-10) ----
+node_modules/
+dist/
+build/
+.next/
+.turbo/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# ---- Misc ----
+coverage/
+*.coverage
+*.coveragexml
+TestResults/
