@@ -21,8 +21,8 @@ Full concept: [docs/design/Canvas.md](docs/design/Canvas.md)
 
 - **Roadmap (authoritative):** [docs/architecture/Phases.md](docs/architecture/Phases.md) — 8 Phases, lettered sub-phases, Definition of Done per sub-phase.
 - **Active Phase:** Phase 1 — Clean Architecture Foundation (Jira Epic **SCRUM-5**).
-- **Active sub-phase:** SCRUM-6 (1A) — Set up Domain layer. Domain scope and folder structure under discussion; no code written yet.
-- **Solution code:** not yet created. Only docs and configs exist in the repo so far.
+- **Active sub-phase:** SCRUM-6 (1A) — Canvas.Common base types. Folder structure and all design decisions approved; ready to implement.
+- **Solution code:** scaffold in place (Canvas.slnx, Canvas.Common, Canvas.Common.Tests, Canvas.ArchitectureTests — no source files yet). See [docs/context/Phase1A-CanvasCommon-Proposal.md](docs/context/Phase1A-CanvasCommon-Proposal.md) for approved design.
 
 When you start a session, confirm current state by:
 1. Reading the bottom of [docs/architecture/Phases.md](docs/architecture/Phases.md) for any updates.
@@ -65,6 +65,7 @@ These rules apply to every session. Ignore none of them without explicit directi
 **Always-loaded (via local, gitignored import chain):**
 
 @CLAUDE.local.md
+@claude.rules.md
 
 *(`CLAUDE.local.md` is gitignored and imports Marc's personal global context from `CLAUDE/` — a symlink to `~/OneDrive/dev/CLAUDE/`. Neither the symlink nor the local file is committed. Public cloners simply skip these imports.)*
 
