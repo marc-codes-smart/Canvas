@@ -2,9 +2,12 @@
   <Folder Name="/src/" />
   <Folder Name="/src/shared/">
     <Project Path="src/shared/Canvas.Common/Canvas.Common.csproj" />
+    <Project Path="src/shared/Canvas.Infrastructure.Shared/Canvas.Infrastructure.Shared.csproj" />
   </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/Canvas.ArchitectureTests/Canvas.ArchitectureTests.csproj" />
     <Project Path="tests/Canvas.Common.Tests/Canvas.Common.Tests.csproj" />
+    <Project Path="tests/Canvas.Infrastructure.Shared.Tests/Canvas.Infrastructure.Shared.Tests.csproj" />
+    <Project Path="tests/Canvas.IntegrationTests/Canvas.IntegrationTests.csproj" />
   </Folder>
 </Solution>

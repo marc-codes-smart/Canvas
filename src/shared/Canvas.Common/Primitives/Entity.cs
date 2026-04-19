@@ -2,7 +2,7 @@ using Canvas.Common.Events;
 
 namespace Canvas.Common.Primitives;
 
-public abstract class Entity<TId>(TId id)
+public abstract class Entity<TId>(TId id) : IHasDomainEvents
     where TId : notnull
 {
     public TId Id { get; } = id;
