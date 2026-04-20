@@ -1,0 +1,38 @@
+services:
+  db:
+    image: mcr.microsoft.com/mssql/server:2022-CU14-ubuntu-22.04
+    environment:
+      ACCEPT_EULA: "Y"
+      SA_PASSWORD: "Canvas_Dev_2024!"
+      MSSQL_PID: Developer
+    ports:
+      - "1433:1433"
+    healthcheck:
+      test: ["CMD", "/opt/mssql-tools18/bin/sqlcmd", "-C", "-S", "localhost", "-U", "sa", "-P", "Canvas_Dev_2024!", "-Q", "SELECT 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+
+  api:
+    build:
+      context: .
+      dockerfile: src/host/Canvas.Host/Dockerfile
+    environment:
+      ConnectionStrings__CanvasDb: "Server=db;Database=Canvas;User Id=sa;Password=Canvas_Dev_2024!;TrustServerCertificate=True"
+      ASPNETCORE_URLS: "http://+:5050"
+    ports:
+      - "5050:5050"
+    depends_on:
+      db:
+        condition: service_healthy
+
+  web:
+    build:
+      context: src/web/Canvas.Web
+      dockerfile: Dockerfile
+      args:
+        NEXT_PUBLIC_API_URL: http://localhost:5050
+    ports:
+      - "3000:3000"
+    depends_on:
+      - api

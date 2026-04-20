@@ -1,0 +1,16 @@
+.git/
+.github/
+.vs/
+.vscode/
+.idea/
+conversations/
+docs/
+
+**/bin/
+**/obj/
+**/.next/
+**/node_modules/
+**/TestResults/
+
+src/web/
+tests/
